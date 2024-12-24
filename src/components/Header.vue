@@ -8,7 +8,7 @@
         </el-tabs>
         <div class="user">
             <img src="../assets//logo.png" width="30px" alt="头像">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <svg class="logout-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#606266" fill-rule="evenodd"
                     d="M15 3.001a1 1 0 1 1 0 2H6v13a1 1 0 0 0 1 1h8a1 1 0 1 1 0 2H7a3 3 0 0 1-3-3v-14a1 1 0 0 1 1-1zm1.707 5.293A1 1 0 0 0 15 9v2H9a1 1 0 1 0 0 2h6v2a1 1 0 0 0 1.707.707l3-3a1 1 0 0 0 0-1.414z"
                     clip-rule="evenodd" />
@@ -71,6 +71,11 @@ const getItem = (name: string) => {
 
         img {
             border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .logout-icon {
+            cursor: pointer;
         }
 
         /* flex: 1; */

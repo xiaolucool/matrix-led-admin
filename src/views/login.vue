@@ -6,17 +6,17 @@
       <el-form ref="ruleFormRef" style="max-width: 600px" :model="ruleForm" status-icon :rules="rules"
         label-width="auto" label-position="top" class="demo-ruleForm">
         <el-form-item label="账号" prop="username">
-          <el-input v-model="ruleForm.username" type="text" autocomplete="off" />
+          <el-input v-model="ruleForm.username" type="text" placeholder="管理员账号" autocomplete="off" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="ruleForm.password" type="password" autocomplete="off" />
+          <el-input v-model="ruleForm.password" type="password" placeholder="管理员密码" autocomplete="off" />
         </el-form-item>
         <el-form-item>
           <div class="btns">
             <el-button type="primary" @click="submitForm(ruleFormRef)">
               登录
             </el-button>
-            <el-button @click="resetForm(ruleFormRef)">清空</el-button>
+            <el-button @click="resetForm(ruleFormRef)">重置</el-button>
           </div>
         </el-form-item>
       </el-form>
@@ -26,7 +26,11 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { loginAdmin } from '@/api/admin'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const ruleFormRef = ref<FormInstance>()
 
@@ -59,12 +63,33 @@ const rules = reactive<FormRules<typeof ruleForm>>({
 // 登录
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  formEl.validate((valid) => {
+  formEl.validate(async (valid) => {
     if (valid) {
       // 登录处理
-      console.log('登录', ruleForm)
+      // console.log('登录', ruleForm)
+      try {
+        const { data } = await loginAdmin<any>(ruleForm)
+        if (data === '密码错误') {
+          ElMessage.error(`${data}`)
+        } else if (data === '管理员不存在') {
+          ElMessage.error(`${data}`)
+        } else if (data.token) {
+          // 登录成功
+          console.log('登录成功')
+          ElMessage({
+            message: '登录成功',
+            type: 'success',
+          })
+          // 存储token
+          localStorage.setItem('token', data.token)
+          // 跳转
+          router.push('/home')
+        }
+      } catch (error) {
+        ElMessage.error(`异常：${error}`)
+      }
     } else {
-      console.log('登录 失败')
+      ElMessage.error(`登录失败`)
     }
   })
 }

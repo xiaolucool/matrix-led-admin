@@ -21,6 +21,10 @@ export const useMenuStore = defineStore('menu', {
                     title: '订单列表',
                     icon: 'GoodsFilled',
                     path: '/goods'
+                }, {
+                    title: '图像取模',
+                    icon: 'Edit',
+                    path: '/mod'
                 }
             ] as MenuItem[],
             activeMenu: '1',
