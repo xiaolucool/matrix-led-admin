@@ -47,7 +47,7 @@ export const routes = [
         name: "goods",
         component: () => import("@/views/goods.vue"),
         meta: {
-          title: "商品管理",
+          title: "动画列表",
           icon: "GoodsFilled"
         }
       }, {
@@ -59,11 +59,11 @@ export const routes = [
           icon: "Shop"
         }
       }, {
-        path: "/mod",
-        name: "mod",
-        component: () => import("@/views/mod.vue"),
+        path: "/create",
+        name: "create",
+        component: () => import("@/views/create.vue"),
         meta: {
-          title: "图像取模",
+          title: "创建动画",
           icon: "Edit"
         }
       }

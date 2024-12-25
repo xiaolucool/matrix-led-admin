@@ -18,13 +18,17 @@ export const useMenuStore = defineStore('menu', {
                     icon: 'UserFilled',
                     path: '/user'
                 }, {
-                    title: '订单列表',
+                    title: '动画列表',
                     icon: 'GoodsFilled',
                     path: '/goods'
                 }, {
-                    title: '图像取模',
+                    title: '订单列表',
                     icon: 'Edit',
-                    path: '/mod'
+                    path: '/order'
+                }, {
+                    title: '创建动画',
+                    icon: 'Edit',
+                    path: '/create'
                 }
             ] as MenuItem[],
             activeMenu: '1',

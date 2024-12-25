@@ -1,5 +1,5 @@
 <template>
-    <div class="admin">
+    <div class="user">
         <el-card class="card">
             <template #header>
                 <div class="card-header">
@@ -214,7 +214,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin {
+.user {
     height: 100%;
 
     .card {

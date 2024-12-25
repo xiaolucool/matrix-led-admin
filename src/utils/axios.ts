@@ -1,10 +1,9 @@
 import type { AxiosRequestConfig, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
+import { apiURL } from '@/config/config';
 
 const axiosInstance: AxiosInstance = axios.create({
-    // baseURL: 'https://api.example.com/',
-    // baseURL: 'http://127.0.0.1:3000/api/v1',
-    baseURL: '/api',
+    baseURL: apiURL,
     timeout: 5000,
     headers: {
         'Content-Type': 'application/json',
