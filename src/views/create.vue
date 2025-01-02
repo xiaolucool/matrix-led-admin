@@ -85,18 +85,15 @@
 <template>
     <div class="create" @mouseup="handleMouseUp">
         <div class="top">
-            <div class="title">动画帧列表-当前帧{{ initialIndex }}-总帧数{{ animationList.length === 50 ? 50 :
-                animationList.length
-                }}
+            <div class="title">{{ isUpdate ? `修改动画ID${animationId}-` : '新增动画-' }}动画帧列表-当前帧{{ initialIndex }}-总帧数{{
+                animationList.length === 50 ? 50 :
+                    animationList.length
+            }}
             </div>
             <el-form class="form" :inline="true" :model="formInline">
                 <el-form-item label="名称">
                     <el-input v-model="formInline.name" size="small" minlength="1" maxlength="20" placeholder="动画名称"
                         clearable />
-                </el-form-item>
-                <el-form-item label="价格">
-                    <el-input v-model="formInline.price" size="small" type="number" min="0" max="10000"
-                        placeholder="动画价格" clearable />
                 </el-form-item>
                 <el-form-item label="播放间隙">
                     <el-input v-model="formInline.interval" size="small" type="number" min="1" max="10"
@@ -112,7 +109,8 @@
                     </el-upload>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" size="small" @click="onSubmit">保到服务器</el-button>
+                    <el-button type="primary" size="small" @click="onSubmit">{{ isUpdate ? '修改保存' : '保到服务器'
+                        }}</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -146,11 +144,12 @@
         </div>
         <div class="btns">
             <el-button @click="onPrev">上一项</el-button>
-            <el-button type="info" @click="onSave">清空左侧</el-button>
-            <el-button type="success" @click="onSave">左镜像右</el-button>
+            <el-button type="info" @click="onClear(1)">清空左侧</el-button>
+            <el-button type="success" @click="onMirror(1)">左镜像右</el-button>
             <el-button type="primary" @click="onSave">保存帧</el-button>
-            <el-button type="success" @click="onSave">右镜像左</el-button>
-            <el-button type="info" @click="onSave">清空右侧</el-button>
+            <el-button type="danger" @click="onDel">删除帧</el-button>
+            <el-button type="success" @click="onMirror(2)">右镜像左</el-button>
+            <el-button type="info" @click="onClear(2)">清空右侧</el-button>
             <el-button @click="onNext">下一项</el-button>
         </div>
     </div>
@@ -160,9 +159,12 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, type UploadProps } from 'element-plus'
 import { useElementBounding, useElementSize } from '@vueuse/core'
-import { getBoxStyle, switchLed, handleMouseMove, handleTouchEnd, transformBoxs } from '@/utils/draw'
+import { getBoxStyle, switchLed, handleMouseMove, handleTouchEnd, transformBoxs, mirrorHorizontally } from '@/utils/draw'
 import type { Box } from '@/types/box'
-import { createAnimation } from '@/api/animation'
+import { createAnimation, getIdAnimation, updateAnimation } from '@/api/animation'
+import { useRoute } from 'vue-router'
+import { imageBaseURL } from '@/config/config'
+const route = useRoute();
 
 // led盒子
 const ledBoxRef = ref<HTMLElement | null>(null)
@@ -177,6 +179,10 @@ const boundaryL = useElementBounding(ledLRef)
 const boundaryR = useElementBounding(ledRRef)
 // 标志位，表示鼠标是否按下
 const isMouseDown = ref(false)
+// 修改还是保存
+const isUpdate = ref(false)
+// 当前动画id
+const animationId = ref(route.params.id)
 
 
 // 动画列表类型
@@ -201,10 +207,9 @@ const initialIndex = ref(1)
 
 // 信息表单
 const formInline = ref({
-    name: "爱心动画",
+    name: "",
     interval: 0,
     image: '',
-    price: 0,
     isOnline: 1,
     frame: 0,
     frames: [] as AnimationList[]
@@ -242,16 +247,30 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 // 表单保存
 const onSubmit = async () => {
-    formInline.value.frame = animationList.value.length
-    formInline.value.frames = animationList.value
-    try {
-        await createAnimation(formInline.value)
-        ElMessage({
-            message: '动画创建成功',
-            type: 'success',
-        })
-    } catch (error) {
-        ElMessage.error(`异常：${error}`)
+    if (isUpdate.value) {
+        // 修改
+        try {
+            await updateAnimation(+animationId.value, formInline.value)
+            ElMessage({
+                message: '动画修改成功',
+                type: 'success',
+            })
+        } catch (error) {
+            ElMessage.error(`异常：${error}`)
+        }
+    } else {
+        // 新增
+        formInline.value.frame = animationList.value.length
+        formInline.value.frames = animationList.value
+        try {
+            await createAnimation(formInline.value)
+            ElMessage({
+                message: '动画创建成功',
+                type: 'success',
+            })
+        } catch (error) {
+            ElMessage.error(`异常：${error}`)
+        }
     }
 }
 
@@ -274,6 +293,30 @@ const handleMouseUp = (event: any) => {
 // 保存当前帧
 const onSave = () => {
     addFrameToList()
+}
+// 删除当前帧
+const onDel = () => {
+    animationList.value.splice(initialIndex.value - 1, 1);
+    initialIndex.value--;
+    updateBoxesFromList();
+}
+// 清空当前帧
+const onClear = (type: number) => {
+    if (type === 1) {
+        boxsL.value = Array.from(Array(11), () => Array.from(Array(24), () => ({ status: 0, isUpdate: true })))
+    } else if (type === 2) {
+        boxsR.value = Array.from(Array(11), () => Array.from(Array(24), () => ({ status: 0, isUpdate: true })))
+    }
+}
+// 镜像
+const onMirror = (type: number) => {
+    if (type === 1) {
+        // 左镜像右
+        boxsR.value = mirrorHorizontally(JSON.parse(JSON.stringify(boxsL.value)))
+    } else if (type === 2) {
+        // 右镜像左
+        boxsL.value = mirrorHorizontally(JSON.parse(JSON.stringify(boxsR.value)))
+    }
 }
 // 下一个
 const onNext = () => {
@@ -313,8 +356,30 @@ const updateBoxesFromList = () => {
 };
 
 
-onMounted(() => {
+onMounted(async () => {
     triangleWidth.value = Math.floor((size.width.value / 2) / 35)
     triangleHeight.value = Math.floor((size.width.value / 2) / 35)
+    const id = route.params.id;
+    if (id) {
+        try {
+            const { data } = await getIdAnimation<any>(+id)
+            animationList.value = data.frames
+            boxsL.value = transformBoxs(data.frames[0].left)
+            boxsR.value = transformBoxs(data.frames[0].right)
+            formInline.value = {
+                name: data.name,
+                interval: data.interval,
+                image: data.image,
+                isOnline: data.isOnline,
+                frame: data.frame,
+                frames: data.frames
+            }
+            imageUrl.value = `${imageBaseURL}${data.image}`
+            // 修改状态
+            isUpdate.value = true
+        } catch (error) {
+            ElMessage.error(`异常：${error}`)
+        }
+    }
 })
 </script>

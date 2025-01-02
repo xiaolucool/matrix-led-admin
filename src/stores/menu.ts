@@ -6,9 +6,9 @@ export const useMenuStore = defineStore('menu', {
         return {
             menuList: [
                 {
-                    title: '首页分析',
+                    title: '系统设置',
                     icon: 'HomeFilled',
-                    path: '/home'
+                    path: '/settings'
                 }, {
                     title: '管理员表',
                     icon: 'Tools',
@@ -23,7 +23,7 @@ export const useMenuStore = defineStore('menu', {
                     path: '/goods'
                 }, {
                     title: '订单列表',
-                    icon: 'Edit',
+                    icon: 'List',
                     path: '/order'
                 }, {
                     title: '创建动画',
@@ -34,9 +34,9 @@ export const useMenuStore = defineStore('menu', {
             activeMenu: '1',
             tabs: [
                 {
-                    title: '首页分析',
+                    title: '系统设置',
                     name: '1',
-                    content: '/home'
+                    content: '/settings'
                 }
             ] as TabsItem[],
             tabsActive: '1'

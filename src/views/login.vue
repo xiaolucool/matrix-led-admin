@@ -83,7 +83,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           // 存储token
           localStorage.setItem('token', data.token)
           // 跳转
-          router.push('/home')
+          router.push('/settings')
         }
       } catch (error) {
         ElMessage.error(`异常：${error}`)

@@ -8,14 +8,20 @@
                         <el-form ref="searchFormRef" class="search-form" :model="searchForm" label-width="auto"
                             status-icon :rules="rules" style="max-width: 600px">
                             <el-form-item label="搜索用户" prop="type">
-                                <el-select v-model="searchForm.type" placeholder="please select your zone">
+                                <el-select v-model="searchForm.type" placeholder="搜索类型">
                                     <el-option label="用户UID" value="1" />
                                     <el-option label="用户名称" value="2" />
                                     <el-option label="电话号码" value="3" />
+                                    <el-option label="会员用户" value="4" />
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="" prop="keyword">
-                                <el-input v-model="searchForm.keyword" placeholder="关键字" />
+                                <el-input v-model="searchForm.keyword" v-if="searchForm.type !== '4'"
+                                    placeholder="关键字" />
+                                <el-select v-model="searchForm.keyword" v-else placeholder="是否会员">
+                                    <el-option label="普通用户" value="0" />
+                                    <el-option label="会员用户" value="1" />
+                                </el-select>
                             </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -29,23 +35,31 @@
                 <el-table-column fixed prop="uid" label="UID" />
                 <el-table-column prop="username" label="用户账号" />
                 <el-table-column prop="phone" label="电话" />
-                <el-table-column prop="orderCount" label="订单数量" />
+                <el-table-column prop="isVip" label="会员">
+                    <template #default="scope">
+                        <el-check-tag :type="scope.row.isVip === 0 ? 'success' : 'warning'" checked
+                            @change="tagChange(scope.row.uid, undefined, scope.row.isVip)">{{ scope.row.isVip ===
+                                0 ? '普通'
+                                : '会员' }}</el-check-tag>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="isActivated" label="状态">
                     <template #default="scope">
                         <el-check-tag :type="scope.row.isActivated === 0 ? 'success' : 'danger'" checked
-                            @change="tagChange(scope.row)">{{ scope.row.isActivated ===
-                                0 ? '已启用'
-                                : '已停用' }}</el-check-tag>
+                            @change="tagChange(scope.row.uid, scope.row.isActivated, undefined)">{{
+                                scope.row.isActivated ===
+                                    0 ? '已启用'
+                                    : '已停用' }}</el-check-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="createTime" label="创建时间" />
+                <el-table-column prop="createTime" label="注册时间" />
                 <el-table-column prop="updateTime" label="更新时间" />
-                <el-table-column fixed="right" prop="role" label="查看订单" min-width="120">
+                <!-- <el-table-column fixed="right" prop="role" label="查看订单" min-width="120">
                     <template #default="scope">
-                        <el-button type="success" icon="Shop" size="small"
+                        <el-button type="primary" link icon="Shop" size="small"
                             @click="router.push({ name: 'order', params: { uid: scope.row.uid } })">查看订单</el-button>
                     </template>
-                </el-table-column>
+                </el-table-column> -->
             </el-table>
             <template #footer>
                 <el-pagination size="small" background layout="total, sizes, prev, pager, next, jumper" :total="total"
@@ -66,7 +80,7 @@ interface User {
     uid: number
     username: string
     phone: string
-    orderCount: number
+    isVip: number
     isActivated: number
     createTime: string
     updateTime: string
@@ -95,7 +109,7 @@ const search = ref({})
 
 const validateType = (rule: any, value: any, callback: any) => {
     // type只能是 1 2 3
-    if (value !== '1' && value !== '2' && value !== '3') {
+    if (value !== '1' && value !== '2' && value !== '3' && value !== '4') {
         callback(new Error('请选择搜索方式'))
     } else if (value === '') {
         callback(new Error('请选择搜索方式'))
@@ -127,21 +141,24 @@ const resetForm = (formEl: FormInstance | undefined) => {
 
 
 // 启用/停用
-const tagChange = async (user: User) => {
-    let { isActivated, uid } = user
-    if (isActivated === 0) {
-        isActivated = 1
+const tagChange = async (uid: string, isActivated?: number, isVip?: number) => {
+    // isActivated 和 isVip 必须传其中一个，怕段传入的是哪一个，并且实现传入0转成1，传入1转成0
+    // 确定哪个参数被传入，并进行转换
+    console.log('状态：', isActivated, 'vip：', isVip)
+    let result: { [key: string]: number | string } = {};
+
+    if (isActivated !== undefined) {
+        // 传入0转成1，传入1转成0
+        result.isActivated = isActivated === 0 ? 1 : 0;
     } else {
-        isActivated = 0
+        result.isVip = isVip === 0 ? 1 : 0;
     }
     try {
-        const { data } = await updateStatusUser({
-            uid,
-            isActivated
-        })
+        result.uid = uid
+        const { data } = await updateStatusUser(result)
         if (data === "用户不存在") return ElMessage.error('用户不存在')
         ElMessage({
-            message: '修改用户状态成功',
+            message: `${data}`,
             type: 'success',
         })
     } catch (error) {
@@ -188,6 +205,11 @@ const onSearch = async () => {
         // 电话
         search.value = {
             phone: searchForm.value.keyword
+        }
+    } else if (searchForm.value.type === '4') {
+        // 是否会员
+        search.value = {
+            isVip: +searchForm.value.keyword
         }
     }
     init()
@@ -238,10 +260,6 @@ onMounted(() => {
                     width: 100px !important;
                 }
 
-                :deep(.el-input__wrapper) {
-                    width: 150px !important;
-                    margin: 0 10px;
-                }
 
                 :deep(.el-form-item) {
                     margin-bottom: 0px !important;

@@ -27,12 +27,10 @@
             <el-table class="table" :data="tableData" style="width: 100%;" size="small">
                 <el-table-column fixed prop="id" label="ID" />
                 <el-table-column prop="name" label="动画名称" />
-                <el-table-column prop="price" label="价格" />
-                <el-table-column prop="salesNumber" label="销量" />
                 <el-table-column prop="image" label="图片">
                     <template #default="scope">
-                        <el-image :preview-teleported="true" :src="`${imageBaseURL}${scope.row.image}`"
-                            alt="图片" :preview-src-list="srcList" style="width: 40px; height: 40px;" />
+                        <el-image :preview-teleported="true" :src="`${imageBaseURL}${scope.row.image}`" alt="图片"
+                            :preview-src-list="srcList" style="width: 40px; height: 40px;" />
                     </template>
                 </el-table-column>
                 <el-table-column prop="interval" label="播放间隙" />
@@ -49,8 +47,8 @@
                 <el-table-column prop="updateTime" label="更新时间" />
                 <el-table-column fixed="right" prop="role" label="修改" min-width="120">
                     <template #default="scope">
-                        <el-button type="success" icon="Shop" size="small"
-                            @click="router.push({ name: '', params: { id: scope.row.id } })">修改动画</el-button>
+                        <el-button type="primary" link icon="Shop" size="small"
+                            @click="router.push({ name: 'create', params: { id: scope.row.id } })">修改动画</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -66,8 +64,7 @@
 <script setup lang="ts">
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { onMounted, ref } from 'vue'
-import { getSearchUser, getUserList, updateStatusUser } from '@/api/user'
-import { getAnimationList } from '@/api/animation'
+import { getAnimationList, updateStatusAnimation } from '@/api/animation'
 import { useRouter } from 'vue-router'
 import { imageBaseURL } from '@/config/config';
 
@@ -81,8 +78,6 @@ interface Animation {
     id: number
     name: string
     image: string
-    price: number
-    salesNumber: number
     isOnline: number
     interval: number
     frame: number
@@ -157,7 +152,7 @@ const tagChange = async (animation: Animation) => {
         isOnline = 0
     }
     try {
-        const { data } = await updateStatusUser({
+        const { data } = await updateStatusAnimation({
             id,
             isOnline
         })

@@ -86,8 +86,8 @@ const handleMouseMove = (e: any, isMouseDown: boolean, boxDirection: 0 | 1, boun
         const x = e.clientX - left.value
         const y = e.clientY - top.value
         // 计算点击位置的行索引
-        const calculatedI = Math.floor(y / (triangleWidth + 3));
-        const calculatedJ = boxDirection === 0 ? Math.floor((x / 11) - calculatedI) : Math.floor((x / triangleWidth) - (11 - calculatedI))
+        const calculatedI = boxDirection === 0 ? Math.floor(y / (triangleWidth + 4)) : Math.floor(y / (triangleWidth + 3));
+        const calculatedJ = boxDirection === 0 ? Math.floor((x / triangleWidth) - calculatedI) : Math.floor((x / triangleWidth) - (11 - calculatedI))
         // 边界判断
         if (calculatedI < 0 || calculatedI >= 11 || calculatedJ < 0 || calculatedJ >= 24) return
         // 避免重复点击

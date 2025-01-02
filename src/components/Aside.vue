@@ -4,7 +4,7 @@
             @close="handleClose">
             <div class="logo">
                 <img src="../assets/logo.png" width="20%" alt="Logo">
-                <span>矩阵灯后台管理系统</span>
+                <span>交互灯后台管理系统</span>
             </div>
             <el-menu-item v-for="(item, index) in tabsStore.menuList" :index="`${index + 1}`" :route="item.path"
                 @click="addMenu(item, index + 1)">

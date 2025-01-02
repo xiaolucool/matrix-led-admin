@@ -8,7 +8,7 @@
                 <el-header>
                     <Header />
                 </el-header>
-                <el-main>
+                <el-main style="background: #F5F6FB;">
                     <RouterView />
                 </el-main>
             </el-container>

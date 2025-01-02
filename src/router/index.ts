@@ -19,11 +19,11 @@ export const routes = [
     path: "/",
     children: [
       {
-        path: "/home",
-        name: "home",
-        component: () => import("@/views/home.vue"),
+        path: "/settings",
+        name: "settings",
+        component: () => import("@/views/settings.vue"),
         meta: {
-          title: "首页分析",
+          title: "系统设置",
           icon: "HomeFilled"
         }
       }, {
@@ -51,15 +51,15 @@ export const routes = [
           icon: "GoodsFilled"
         }
       }, {
-        path: "/order",
+        path: "/order/:id?",
         name: "order",
         component: () => import("@/views/order.vue"),
         meta: {
           title: "订单列表",
-          icon: "Shop"
+          icon: "List"
         }
       }, {
-        path: "/create",
+        path: "/create/:id?",
         name: "create",
         component: () => import("@/views/create.vue"),
         meta: {
